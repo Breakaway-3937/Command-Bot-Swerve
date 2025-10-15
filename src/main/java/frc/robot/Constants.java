@@ -17,4 +17,10 @@ public final class Constants {
     public static final double MAX_SPEED = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
     public static final double MAX_ANGULAR_RATE = RotationsPerSecond.of(1.25).in(RadiansPerSecond);
   }
+  public static final class motors {
+    public static final int MOTOR_1_ID = 12; 
+    public static final int MOTOR_2_ID = 13; 
+  }
+
 }
+

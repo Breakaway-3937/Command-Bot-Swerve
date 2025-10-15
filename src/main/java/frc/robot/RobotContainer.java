@@ -1,17 +1,20 @@
 package frc.robot;
 
 import frc.robot.subsystems.Swerve;
+import frc.robot.subsystems.Motors;
 import frc.robot.generated.TunerConstants;
 
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class RobotContainer {
 
   private final Swerve s_Swerve = TunerConstants.createDrivetrain();
+  private final Motors s_Motors = new Motors();
   private double translationMultiplier = 1;
   private double rotationMultiplier = 1;
 
@@ -35,7 +38,13 @@ public class RobotContainer {
       )
     );
 
-    driveController.a().onTrue(Commands.runOnce(() -> { s_Swerve.seedFieldCentric(); }));
+    driveController.x().onTrue(Commands.runOnce(() -> { s_Swerve.seedFieldCentric(); }));
+    driveController.y().onTrue(Commands.run(() -> {s_Motors.runArm();}));
+    driveController.a().onTrue(Commands.run(() -> {s_Motors.runArmBack();}));
+    driveController.b().onTrue(Commands.run(() -> {s_Motors.runArmNo();}));
+    driveController.b().onTrue(Commands.run(() -> {s_Motors.runLegNo();}));
+    driveController.povUp().onTrue(Commands.run(() -> {s_Motors.runLeg();}));
+    driveController.povDown().onTrue(Commands.run(() -> {s_Motors.runLegBack();}));
 
   }
 }

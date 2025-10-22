@@ -20,6 +20,8 @@ public final class Constants {
   public static final class motors {
     public static final int MOTOR_1_ID = 12; 
     public static final int MOTOR_2_ID = 13; 
+    public static final int MOTOR_3_ID = 14;
+    public static final int MOTOR_4_ID = 15;
   }
 
 }

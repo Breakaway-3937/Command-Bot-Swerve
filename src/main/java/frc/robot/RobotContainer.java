@@ -38,13 +38,10 @@ public class RobotContainer {
       )
     );
 
-    driveController.x().onTrue(Commands.runOnce(() -> { s_Swerve.seedFieldCentric(); }));
-    driveController.y().onTrue(Commands.run(() -> {s_Motors.runArm();}));
-    driveController.a().onTrue(Commands.run(() -> {s_Motors.runArmBack();}));
-    driveController.b().onTrue(Commands.run(() -> {s_Motors.runArmNo();}));
-    driveController.b().onTrue(Commands.run(() -> {s_Motors.runLegNo();}));
-    driveController.povUp().onTrue(Commands.run(() -> {s_Motors.runLeg();}));
-    driveController.povDown().onTrue(Commands.run(() -> {s_Motors.runLegBack();}));
-
+    driveController.rightBumper().onTrue(Commands.runOnce(() -> { s_Swerve.seedFieldCentric(); }));
+    driveController.a().onTrue(s_Motors.setMotor1Speed());
+    driveController.b().onTrue(s_Motors.setMotor2Speed());
+    driveController.x().onTrue(s_Motors.setMotor3Speed());
+    driveController.y().onTrue(s_Motors.setMotor4Speed());
   }
 }

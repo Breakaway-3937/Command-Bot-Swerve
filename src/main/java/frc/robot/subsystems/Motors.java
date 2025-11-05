@@ -15,6 +15,7 @@ public class Motors extends SubsystemBase {
   private SparkMax Motor2;
   private SparkMax Motor3;
   private SparkMax Motor4;
+  private NetworkTable motorsTable;
 
   private String motorType1 = "Brushed";
   private String motorType2 = "Brushed";

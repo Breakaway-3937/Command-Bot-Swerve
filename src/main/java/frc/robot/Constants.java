@@ -18,10 +18,10 @@ public final class Constants {
     public static final double MAX_ANGULAR_RATE = RotationsPerSecond.of(1.25).in(RadiansPerSecond);
   }
   public static final class motors {
-    public static final int MOTOR_1_ID = 12; 
-    public static final int MOTOR_2_ID = 13; 
-    public static final int MOTOR_3_ID = 14;
-    public static final int MOTOR_4_ID = 15;
+    public static final int MOTOR_1_ID = 11; 
+    public static final int MOTOR_2_ID = 12; 
+    public static final int MOTOR_3_ID = 13;
+    public static final int MOTOR_4_ID = 14;
   }
 
 }

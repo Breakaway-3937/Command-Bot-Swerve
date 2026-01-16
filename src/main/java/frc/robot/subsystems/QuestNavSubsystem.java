@@ -9,19 +9,20 @@ import com.ctre.phoenix6.Utils;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import gg.questnav.questnav.QuestNav;
-import gg.questnav.questnav.QuestNavPoseEstimate;
+import gg.questnav.questnav.PoseFrame;
 import frc.robot.subsystems.Swerve;
 
 public class QuestNavSubsystem extends SubsystemBase {
 
   public QuestNav questNav = new QuestNav();
-  private Transform2d QUEST_TO_ROBOT = new Transform2d(0.27,0.0, new Rotation2d());
+  private Transform3d ROBOT_TO_QUEST = new Transform3d(0.27, 0.0, 0.0, new Rotation3d());
   private Swerve s_Swerve;
   
   public QuestNavSubsystem(Swerve s_Swerve) {
@@ -29,36 +30,53 @@ public class QuestNavSubsystem extends SubsystemBase {
   }
 
   public void setQuestNavPose(Pose2d pose) {
-    questNav.setPose(pose.transformBy(QUEST_TO_ROBOT));
+    // Convert 2D pose to 3D
+    Pose3d robotPose3d = new Pose3d(pose);
+    // Transform to Quest pose
+    Pose3d questPose = robotPose3d.transformBy(ROBOT_TO_QUEST);
+    questNav.setPose(questPose);
   }
 
   public Pose2d getPose() {
-    QuestNavPoseEstimate estimate = questNav.getLatestPoseEstimate();
-    if (estimate != null) {
-      return estimate.pose.transformBy(QUEST_TO_ROBOT.inverse());
+    PoseFrame[] poseFrames = questNav.getAllUnreadPoseFrames();
+    
+    if (poseFrames.length > 0) {
+      // Get the most recent Quest pose
+      Pose3d questPose = poseFrames[poseFrames.length - 1].questPose3d();
+      // Transform to robot pose
+      Pose3d robotPose = questPose.transformBy(ROBOT_TO_QUEST.inverse());
+      return robotPose.toPose2d();
     }
-    return new Pose2d(); // Return origin if no estimate available
+    
+    return new Pose2d(); // Return origin if no data available
   }
 
   public void updateVisionMeasurement() {
     Matrix<N3, N1> QUESTNAV_STD_DEVS = VecBuilder.fill(0.02, 0.02, 0.035); //The suggested Standard Deviations for QuestNav
 
-    if (questNav.isConnected() && questNav.isTracking()) {
+    if (questNav.isConnected()) {
+      // Get the latest pose data frames from the Quest
+      PoseFrame[] questFrames = questNav.getAllUnreadPoseFrames();
 
-        QuestNavPoseEstimate estimate = questNav.getLatestPoseEstimate();
-        
-        if (estimate != null) {
-          Pose2d pose = estimate.pose.transformBy(QUEST_TO_ROBOT.inverse());
+      // Loop over the pose data frames and send them to the pose estimator
+      for (PoseFrame questFrame : questFrames) {
+        // Make sure the Quest was tracking the pose for this frame
+        if (questFrame.isTracking()) {
+          // Get the pose of the Quest
+          Pose3d questPose = questFrame.questPose3d();
+          // Get timestamp for when the data was sent
+          double timestamp = questFrame.dataTimestamp();
 
-          // Get timestamp from the estimate
-          double timestamp = estimate.timestampSeconds;
+          // Transform by the mount pose to get your robot pose
+          Pose3d robotPose = questPose.transformBy(ROBOT_TO_QUEST.inverse());
 
           // Convert FPGA timestamp to CTRE's time domain using Phoenix 6 utility
           double ctreTimestamp = Utils.fpgaToCurrentTime(timestamp);
 
           // Add the measurement to our estimator
-          s_Swerve.addVisionMeasurement(pose, ctreTimestamp, QUESTNAV_STD_DEVS);
+          s_Swerve.addVisionMeasurement(robotPose.toPose2d(), ctreTimestamp, QUESTNAV_STD_DEVS);
         }
+      }
     }
   }
 
